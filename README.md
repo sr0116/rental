@@ -1,4 +1,4 @@
-## 📌 오늘 진행한 작업 정리
+##  결제 연습 흐름
 
 ### 1. Spring Boot 백엔드
 - MariaDB 연결 (`rental` DB) -> np.imchobo.com
