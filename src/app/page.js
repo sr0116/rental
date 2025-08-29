@@ -1,114 +1,103 @@
-"use client";
+import Image from "next/image";
 
-import Script from "next/script";
-import { useState } from "react";
-
-declare global { interface Window { IMP: any } }
-
-const MERCHANT_CODE = "imp12345678"; // PortOne 식별코드(테스트용). 운영은 .env 권장
-const API_BASE = "http://localhost:8080/api/payments"; // 스프링 서버
-
-export default function PayTestPage() {
-  const [loading, setLoading] = useState(false);
-
-  const initIMP = () => { if (window.IMP) window.IMP.init(MERCHANT_CODE); };
-
-  // ① 일회성 결제
-  const oneTime = async () => {
-    initIMP();
-    const merchant_uid = `one_${Date.now()}`;
-    await fetch(`${API_BASE}/prepare`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ merchantUid: merchant_uid, amount: 1000, planType: "ONE_TIME" })
-    });
-    setLoading(true);
-    window.IMP.request_pay({
-      pg: "html5_inicis",
-      pay_method: "card",
-      merchant_uid,
-      name: "일회성 결제 테스트",
-      amount: 1000,
-      buyer_email: "test@example.com",
-      buyer_name: "홍길동",
-    }, async (rsp: any) => {
-      setLoading(false);
-      if (!rsp.success) return alert(`실패: ${rsp.error_msg}`);
-      const res = await fetch(`${API_BASE}/complete`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ impUid: rsp.imp_uid, merchantUid: rsp.merchant_uid })
-      }).then(r=>r.json());
-      alert(res.ok ? "결제 검증 OK" : `검증 실패: ${res.message}`);
-    });
-  };
-
-  // ② 정기 첫 결제(빌링키 저장)
-  const firstRecurring = async () => {
-    initIMP();
-    const merchant_uid = `sub_first_${Date.now()}`;
-    const customer_uid = "customer_demo_001";
-    await fetch(`${API_BASE}/prepare`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ merchantUid: merchant_uid, amount: 1200, planType: "RECURRING", customerUid: customer_uid })
-    });
-    setLoading(true);
-    window.IMP.request_pay({
-      pg: "html5_inicis",
-      pay_method: "card",
-      merchant_uid,
-      customer_uid,
-      name: "정기 첫 결제",
-      amount: 1200,
-      buyer_email: "test-sub@example.com",
-      buyer_name: "정기구독자",
-    }, async (rsp: any) => {
-      setLoading(false);
-      if (!rsp.success) return alert(`실패: ${rsp.error_msg}`);
-      const res = await fetch(`${API_BASE}/complete`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ impUid: rsp.imp_uid, merchantUid: rsp.merchant_uid })
-      }).then(r=>r.json());
-      alert(res.ok ? "초기 결제/빌링키 OK" : `검증 실패: ${res.message}`);
-    });
-  };
-
-  // ③ 정기 재청구(API)
-  const chargeAgain = async () => {
-    const res = await fetch(`${API_BASE}/recurring/charge`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ customerUid: "customer_demo_001", amount: 1500, name: "재청구" })
-    }).then(r=>r.json());
-    alert(res.ok ? "재청구 성공" : `재청구 실패: ${res.message}`);
-  };
-
-  // ④ 환불(부분/전액)
-  const refund = async () => {
-    const merchant_uid = prompt("환불 merchant_uid 입력:", "one_...") || "";
-    const amountStr = prompt("부분 환불 금액(전액이면 비움):", "");
-    const amount = amountStr ? Number(amountStr) : undefined;
-    const res = await fetch(`${API_BASE}/refund`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ merchantUid: merchant_uid, amount, reason: "테스트 환불" })
-    }).then(r=>r.json());
-    alert(res.ok ? "환불 성공" : `환불 실패: ${res.message}`);
-  };
-
+export default function Home() {
   return (
-      <main className="p-6 space-y-4">
-        <Script src="https://cdn.iamport.kr/v1/iamport.js" strategy="afterInteractive" />
-        <h1 className="text-xl font-semibold">PortOne 결제 테스트(Next.js → Spring)</h1>
-        <div className="flex gap-2 flex-wrap">
-          <button disabled={loading} className="border rounded px-3 py-2" onClick={oneTime}>① 일회성 결제</button>
-          <button disabled={loading} className="border rounded px-3 py-2" onClick={firstRecurring}>② 정기 첫 결제(빌링키)</button>
-          <button disabled={loading} className="border rounded px-3 py-2" onClick={chargeAgain}>③ 정기 재청구(API)</button>
-          <button disabled={loading} className="border rounded px-3 py-2" onClick={refund}>④ 환불</button>
+    <div className="font-sans grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20">
+      <main className="flex flex-col gap-[32px] row-start-2 items-center sm:items-start">
+        <Image
+          className="dark:invert"
+          src="/next.svg"
+          alt="Next.js logo"
+          width={180}
+          height={38}
+          priority
+        />
+        <ol className="font-mono list-inside list-decimal text-sm/6 text-center sm:text-left">
+          <li className="mb-2 tracking-[-.01em]">
+            Get started by editing{" "}
+            <code className="bg-black/[.05] dark:bg-white/[.06] font-mono font-semibold px-1 py-0.5 rounded">
+              src/app/page.js
+            </code>
+            .
+          </li>
+          <li className="tracking-[-.01em]">
+            Save and see your changes instantly.
+          </li>
+        </ol>
+
+        <div className="flex gap-4 items-center flex-col sm:flex-row">
+          <a
+            className="rounded-full border border-solid border-transparent transition-colors flex items-center justify-center bg-foreground text-background gap-2 hover:bg-[#383838] dark:hover:bg-[#ccc] font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 sm:w-auto"
+            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            <Image
+              className="dark:invert"
+              src="/vercel.svg"
+              alt="Vercel logomark"
+              width={20}
+              height={20}
+            />
+            Deploy now
+          </a>
+          <a
+            className="rounded-full border border-solid border-black/[.08] dark:border-white/[.145] transition-colors flex items-center justify-center hover:bg-[#f2f2f2] dark:hover:bg-[#1a1a1a] hover:border-transparent font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 w-full sm:w-auto md:w-[158px]"
+            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            Read our docs
+          </a>
         </div>
-        {loading && <p>처리 중…</p>}
       </main>
+      <footer className="row-start-3 flex gap-[24px] flex-wrap items-center justify-center">
+        <a
+          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
+          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
+          target="_blank"
+          rel="noopener noreferrer"
+        >
+          <Image
+            aria-hidden
+            src="/file.svg"
+            alt="File icon"
+            width={16}
+            height={16}
+          />
+          Learn
+        </a>
+        <a
+          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
+          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
+          target="_blank"
+          rel="noopener noreferrer"
+        >
+          <Image
+            aria-hidden
+            src="/window.svg"
+            alt="Window icon"
+            width={16}
+            height={16}
+          />
+          Examples
+        </a>
+        <a
+          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
+          href="https://nextjs.org?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
+          target="_blank"
+          rel="noopener noreferrer"
+        >
+          <Image
+            aria-hidden
+            src="/globe.svg"
+            alt="Globe icon"
+            width={16}
+            height={16}
+          />
+          Go to nextjs.org →
+        </a>
+      </footer>
+    </div>
   );
 }
