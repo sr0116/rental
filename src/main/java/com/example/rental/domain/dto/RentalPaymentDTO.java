@@ -45,4 +45,9 @@ public class RentalPaymentDTO {
 
   private LocalDateTime createdAt;
   private LocalDateTime updatedAt;
+
+// 추가 정기 결제 파트
+  private Integer periodDays;
+  private LocalDateTime serviceEndAt;
+  private Boolean isRefunded;
 }

@@ -1,4 +1,4 @@
-package com.example.rental.domain.dto;
+package com.example.rental.domain;
 
 
 import lombok.*;

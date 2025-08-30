@@ -48,6 +48,13 @@ public class RentalPayment {
   private LocalDateTime canceledAt;
   private LocalDateTime refundedAt;
 
+  //  정기 결제 (빌링 키 발급 위해 추가
+  private Integer periodDays;      // 이번 정기 결제의 이용일수(예: 30일, 31일)
+  private LocalDateTime serviceEndAt; // 이 결제가 보장하는 서비스 종료일
+
+  // 환불 여부 flag (있으면 편함)
+  private Boolean isRefunded;
+
   @Lob
   private String webhookPayload;
 
@@ -80,6 +87,8 @@ public class RentalPayment {
   public void preUpdate() {
     updatedAt = LocalDateTime.now();
   }
+  //  환불 정책 계산에 필요
+
 
   public enum PlanType { ONE_TIME, RECURRING }
   public enum PayMethod { card, vbank, easy, trans, phone }
