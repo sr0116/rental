@@ -1,0 +1,61 @@
+plugins {
+    id 'java'
+    id 'org.springframework.boot' version '3.5.5'
+    id 'io.spring.dependency-management' version '1.1.7'
+}
+
+group = 'com.imchobo'
+version = '0.0.1-SNAPSHOT'
+description = 'lease'
+
+java {
+    toolchain {
+        languageVersion = JavaLanguageVersion.of(21)
+    }
+}
+
+configurations {
+    compileOnly {
+        extendsFrom annotationProcessor
+    }
+}
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    /* ---- Spring 기본 ---- */
+    implementation 'org.springframework.boot:spring-boot-starter-web'      // Web MVC, JSON (Jackson) 포함
+    implementation 'org.springframework.boot:spring-boot-starter-data-jpa' // JPA + Hibernate
+    implementation 'org.springframework.boot:spring-boot-starter-validation'// @Valid, Bean Validation(JSR 380)
+
+    /* ---- DB 드라이버 ---- */
+    runtimeOnly 'org.mariadb.jdbc:mariadb-java-client:3.4.1'               // MariaDB JDBC 드라이버
+
+    /* ---- MapStruct (엔티티 <-> DTO 매핑) ---- */
+    implementation 'org.mapstruct:mapstruct:1.6.3'
+    annotationProcessor 'org.mapstruct:mapstruct-processor:1.6.3'
+    // (옵션) Lombok과 함께 사용할 때 경고 줄이는 바인딩
+    annotationProcessor 'org.projectlombok:lombok-mapstruct-binding:0.2.0'
+
+    /* ---- Lombok (보일러플레이트 제거) ---- */
+    compileOnly 'org.projectlombok:lombok'
+    annotationProcessor 'org.projectlombok:lombok'
+
+    /* ---- 설정 메타데이터(옵션) ----
+       @ConfigurationProperties 자동 완성/힌트 제공용 */
+    annotationProcessor 'org.springframework.boot:spring-boot-configuration-processor'
+
+    /* ---- 테스트 ---- */
+    testImplementation 'org.springframework.boot:spring-boot-starter-test'
+    testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+
+    /* ---- (옵션) 개발 편의 ----
+       로컬 개발 중 자동 리스타트 등 제공. 필요 시 주석 해제 */
+    // developmentOnly 'org.springframework.boot:spring-boot-devtools'
+}
+
+tasks.named('test') {
+    useJUnitPlatform()
+}
