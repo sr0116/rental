@@ -1,103 +1,207 @@
-import Image from "next/image";
+"use client";
 
-export default function Home() {
+import { useState } from "react";
+
+export default function TestPage() {
+  const BASE_URL = "http://localhost:8080/api";
+
+  const [mno] = useState(1);
+  const [addresses, setAddresses] = useState([]);
+  const [deliveries, setDeliveries] = useState([]);
+  const [log, setLog] = useState("");
+
+  // -------- Address API --------
+  const createAddress = async () => {
+    const res = await fetch(`${BASE_URL}/addresses`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        mno,
+        name: "홍길동",
+        tel: "010-1234-5678",
+        zipcode: "06236",
+        addr: "서울 강남구 테헤란로 152",
+        addrDetail: "101동 1001호",
+        isDefault: true,
+        memo: "테스트 배송지"
+      }),
+    });
+    setLog(JSON.stringify(await res.json(), null, 2));
+  };
+
+  const listAddresses = async () => {
+    const res = await fetch(`${BASE_URL}/addresses?mno=${mno}`);
+    const data = await res.json();
+    setAddresses(data.data || []);
+    setLog(JSON.stringify(data, null, 2));
+  };
+
+  const setDefaultAddress = async (addrno) => {
+    const res = await fetch(`${BASE_URL}/addresses/${addrno}/default?mno=${mno}`, {
+      method: "PATCH",
+    });
+    setLog(JSON.stringify(await res.json(), null, 2));
+  };
+
+  // -------- Delivery API --------
+  const createDelivery = async () => {
+    const res = await fetch(`${BASE_URL}/deliveries`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        orderId: 123,
+        subscribeId: null,
+        mno,
+        addrno: 1,
+        pno: 1,
+        memo: "경비실에 맡겨주세요",
+        carrierCode: "CJ"
+      }),
+    });
+    setLog(JSON.stringify(await res.json(), null, 2));
+  };
+
+  const listDeliveries = async () => {
+    const res = await fetch(`${BASE_URL}/deliveries?mno=${mno}`);
+    const data = await res.json();
+    setDeliveries(data.data || []);
+    setLog(JSON.stringify(data, null, 2));
+  };
+
+  const updateStatus = async (dno, status) => {
+    const res = await fetch(`${BASE_URL}/deliveries/${dno}/status`, {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ status }),
+    });
+    setLog(JSON.stringify(await res.json(), null, 2));
+  };
+
   return (
-    <div className="font-sans grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20">
-      <main className="flex flex-col gap-[32px] row-start-2 items-center sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={180}
-          height={38}
-          priority
-        />
-        <ol className="font-mono list-inside list-decimal text-sm/6 text-center sm:text-left">
-          <li className="mb-2 tracking-[-.01em]">
-            Get started by editing{" "}
-            <code className="bg-black/[.05] dark:bg-white/[.06] font-mono font-semibold px-1 py-0.5 rounded">
-              src/app/page.js
-            </code>
-            .
-          </li>
-          <li className="tracking-[-.01em]">
-            Save and see your changes instantly.
-          </li>
-        </ol>
+      <div className="p-6 space-y-6">
+        <h1 className="text-2xl font-bold"> API 통합 테스트</h1>
 
-        <div className="flex gap-4 items-center flex-col sm:flex-row">
-          <a
-            className="rounded-full border border-solid border-transparent transition-colors flex items-center justify-center bg-foreground text-background gap-2 hover:bg-[#383838] dark:hover:bg-[#ccc] font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 sm:w-auto"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={20}
-              height={20}
-            />
-            Deploy now
-          </a>
-          <a
-            className="rounded-full border border-solid border-black/[.08] dark:border-white/[.145] transition-colors flex items-center justify-center hover:bg-[#f2f2f2] dark:hover:bg-[#1a1a1a] hover:border-transparent font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 w-full sm:w-auto md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Read our docs
-          </a>
+        {/* Address Section */}
+        <div className="p-4 border rounded-lg shadow space-y-4">
+          <h2 className="text-xl font-semibold"> 배송지(Address)</h2>
+          <div className="space-x-2">
+            <button
+                onClick={createAddress}
+                className="px-3 py-1 bg-blue-600 text-white rounded"
+            >
+              배송지 등록
+            </button>
+            <button
+                onClick={listAddresses}
+                className="px-3 py-1 bg-green-600 text-white rounded"
+            >
+              배송지 목록 조회
+            </button>
+          </div>
+
+          {addresses.length > 0 && (
+              <table className="w-full text-sm border mt-4">
+                <thead className="bg-gray-100">
+                <tr>
+                  <th className="border px-2 py-1">ID</th>
+                  <th className="border px-2 py-1">이름</th>
+                  <th className="border px-2 py-1">주소</th>
+                  <th className="border px-2 py-1">기본여부</th>
+                  <th className="border px-2 py-1">액션</th>
+                </tr>
+                </thead>
+                <tbody>
+                {addresses.map((a) => (
+                    <tr key={a.addrno}>
+                      <td className="border px-2 py-1">{a.addrno}</td>
+                      <td className="border px-2 py-1">{a.name}</td>
+                      <td className="border px-2 py-1">{a.addr}</td>
+                      <td className="border px-2 py-1">
+                        {a.isDefault ? "✔️" : ""}
+                      </td>
+                      <td className="border px-2 py-1">
+                        <button
+                            onClick={() => setDefaultAddress(a.addrno)}
+                            className="px-2 py-1 bg-yellow-500 text-white rounded"
+                        >
+                          기본 지정
+                        </button>
+                      </td>
+                    </tr>
+                ))}
+                </tbody>
+              </table>
+          )}
         </div>
-      </main>
-      <footer className="row-start-3 flex gap-[24px] flex-wrap items-center justify-center">
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/file.svg"
-            alt="File icon"
-            width={16}
-            height={16}
-          />
-          Learn
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/window.svg"
-            alt="Window icon"
-            width={16}
-            height={16}
-          />
-          Examples
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/globe.svg"
-            alt="Globe icon"
-            width={16}
-            height={16}
-          />
-          Go to nextjs.org →
-        </a>
-      </footer>
-    </div>
+
+        {/* Delivery Section */}
+        <div className="p-4 border rounded-lg shadow space-y-4">
+          <h2 className="text-xl font-semibold">배송(Delivery)</h2>
+          <div className="space-x-2">
+            <button
+                onClick={createDelivery}
+                className="px-3 py-1 bg-blue-600 text-white rounded"
+            >
+              배송 생성
+            </button>
+            <button
+                onClick={listDeliveries}
+                className="px-3 py-1 bg-green-600 text-white rounded"
+            >
+              배송 목록 조회
+            </button>
+          </div>
+
+          {deliveries.length > 0 && (
+              <table className="w-full text-sm border mt-4">
+                <thead className="bg-gray-100">
+                <tr>
+                  <th className="border px-2 py-1">DNO</th>
+                  <th className="border px-2 py-1">상품</th>
+                  <th className="border px-2 py-1">상태</th>
+                  <th className="border px-2 py-1">액션</th>
+                </tr>
+                </thead>
+                <tbody>
+                {deliveries.map((d) => (
+                    <tr key={d.dno}>
+                      <td className="border px-2 py-1">{d.dno}</td>
+                      <td className="border px-2 py-1">{d.pno}</td>
+                      <td className="border px-2 py-1">{d.status}</td>
+                      <td className="border px-2 py-1 space-x-1">
+                        <button
+                            onClick={() => updateStatus(d.dno, "PREPARING")}
+                            className="px-2 py-1 bg-yellow-500 text-white rounded"
+                        >
+                          PREPARING
+                        </button>
+                        <button
+                            onClick={() => updateStatus(d.dno, "SHIPPING")}
+                            className="px-2 py-1 bg-orange-500 text-white rounded"
+                        >
+                          SHIPPING
+                        </button>
+                        <button
+                            onClick={() => updateStatus(d.dno, "DELIVERED")}
+                            className="px-2 py-1 bg-purple-600 text-white rounded"
+                        >
+                          DELIVERED
+                        </button>
+                      </td>
+                    </tr>
+                ))}
+                </tbody>
+              </table>
+          )}
+        </div>
+
+        {/* Log Section */}
+        <div className="p-4 border rounded-lg shadow">
+          <h2 className="text-xl font-semibold"> 응답 로그</h2>
+          <pre className="bg-gray-100 p-2 text-xs overflow-x-auto">
+          {log}
+        </pre>
+        </div>
+      </div>
   );
 }
