@@ -60,3 +60,30 @@
 
 ---
 
+##  환불 API 연동 점검
+- Next.js → POST /api/payments/refund 호출 구조 확인
+  - 프론트에서 보내는 값: paymentId, amount, reason
+  - impUid는 프론트가 아닌 백엔드(DB 조회) 에서 처리
+
+- Spring Boot (백엔드) 흐름
+  1. PaymentController.refund() → PaymentServiceImpl.refund()
+  2. DB에서 paymentId 기준으로 결제 내역 조회 (impUid 포함)
+  3. PortOneClient.cancelPayment() 호출 (PortOne REST API /payments/cancel)
+  4. 환불 성공 시:
+     - tbl_payment.paystatus → REFUNDED / PARTIAL_REFUNDED
+     - tbl_refund 테이블에 기록 추가
+---
+##  문제 이슈  (결제 요청에서는 안 그랬는데 환불 때 이슈 발생)
+- 환불 API 호출 시 imp_key, imp_secret 누락 오류 발생
+- 원인: RestTemplate이 Map<String,String>을 form-urlencoded로 직렬화 → PortOne API가 JSON만 허용
+- 결과: PortOne이 "imp_key, imp_secret 파라메터가 누락되었습니다." 에러 반환
+---
+## 해결 
+- Map 대신 DTO 객체(TokenRequest)를 사용하여 JSON 직렬화 강제
+- 최종 전송 JSON:
+  {
+    "imp_key": "5356...",
+    "imp_secret": "mumg6..."
+  }
+- 이 방식으로 access_token 정상 발급됨
+
