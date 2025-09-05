@@ -5,10 +5,15 @@ import com.imchobo.lease.domain.dto.PaymentDTO;
 import com.imchobo.lease.domain.dto.PaymentPrepareDTO;
 import com.imchobo.lease.domain.dto.RefundRequestDTO;
 import com.imchobo.lease.service.PaymentService;
+import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * PaymentController
@@ -26,7 +31,9 @@ import org.springframework.web.bind.annotation.*;
 // @Slf4j: 로깅(log) 기능 제공 (log.info 등)
 public class PaymentController {
 
-  /** 결제 서비스 (비즈니스 로직 담당) */
+  /**
+   * 결제 서비스 (비즈니스 로직 담당)
+   */
   private final PaymentService paymentService;
 
   /**
@@ -51,10 +58,37 @@ public class PaymentController {
    * - 구독 만료 시 전체 환불
    * - 조기 해지 시 위약금 차감 후 부분 환불
    */
+
+
   @PostMapping("/refund")
-  public ResponseEntity<PaymentDTO> refund(@RequestBody RefundRequestDTO dto) {
+  public ResponseEntity<?> refund(@RequestBody RefundRequestDTO dto) {
     log.info("환불 API 호출 - paymentId: {}, amount: {}", dto.getPaymentId(), dto.getAmount());
-    PaymentDTO response = paymentService.refund(dto);
-    return ResponseEntity.ok(response);
+
+    try {
+      PaymentDTO response = paymentService.refund(dto);
+
+      // 성공 응답
+      Map<String, Object> result = new HashMap<>();
+      result.put("success", true);
+      result.put("data", response);
+      return ResponseEntity.ok(result);
+
+    } catch (IllegalArgumentException e) {
+      log.error("환불 실패 - 잘못된 요청: {}", e.getMessage());
+
+      Map<String, Object> error = new HashMap<>();
+      error.put("success", false);
+      error.put("error", e.getMessage());
+      return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(error);
+
+    } catch (Exception e) {
+      log.error("환불 처리 중 서버 오류", e);
+
+      Map<String, Object> error = new HashMap<>();
+      error.put("success", false);
+      error.put("error", "환불 처리 중 오류가 발생했습니다");
+      error.put("details", e.getMessage());
+      return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(error);
+    }
   }
 }

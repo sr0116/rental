@@ -1,6 +1,8 @@
 package com.imchobo.lease.config;
 
+import jakarta.annotation.PostConstruct;
 import lombok.Getter;
+import lombok.extern.log4j.Log4j2;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Configuration;
 
@@ -11,6 +13,7 @@ import org.springframework.context.annotation.Configuration;
  */
 @Configuration
 @Getter
+@Log4j2
 public class PortOneClientConfig {
 
   /**
@@ -34,4 +37,15 @@ public class PortOneClientConfig {
    */
   @Value("${portone.merchant-code}")
   private String merchantCode;
+
+  @PostConstruct
+  public void init() {
+    log.info("PortOne 설정 확인 → apiKey={}, apiSecret={}, merchantCode={}",
+            apiKey, apiSecret, merchantCode);
+
+
+  }
+
+
+
 }
