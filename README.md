@@ -1,36 +1,33 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://github.com/vercel/next.js/tree/canary/packages/create-next-app).
+# 모션 적용 
 
-## Getting Started
+## 1. 결제 플로우 점검
+- Next.js → PortOne SDK(IMP.request_pay) 호출
+- 결제 순서
+  1. /api/payments/prepare 호출 → merchantUid 발급
+  2. PortOne 결제창 실행 (pg: nice_v2, 카드)
+  3. 결제 완료 후 impUid 반환
+  4. /api/payments/complete 호출 → 검증 및 DB 저장(tbl_payment 상태 갱신)
+---
+## 2. Lottie 애니메이션 적용 (실제로 결제 로딩/ 실패/ 성공/ 에러시 애니메이션 다르게 적용)
+- public/lottie/ 경로에 JSON 파일 추가
+  - payment-processing.json
+  - payment-success.json
+  - payment-failed.json
+  - payment-refunded.json
+- PaymentStatusOverlay.jsx에서 상태값에 따라 매핑
+  - processing → 결제 중
+  - success → 결제 성공
+  - failed → 결제 실패
+  - refunded → 환불
+---
+## 3. 컴포넌트 구조 (기존 실제 백엔드 서버와 연동해서 실제로 결제/ 환불 API 적용)
+components/
+- PaymentPage.jsx (메인 결제 로직)
+- PaymentStatusOverlay.jsx (Lottie 상태 모달)
+- PayButton.jsx (결제 버튼)
+- Header.jsx / Footer.jsx / MotionWrapper.jsx
 
-First, run the development server:
-
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
-
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
-
-You can start editing the page by modifying `app/page.js`. The page auto-updates as you edit the file.
-
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
-
-## Learn More
-
-To learn more about Next.js, take a look at the following resources:
-
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+app/payment/
+- page.js (PaymentPage 임포트)
+- loading.js (로딩 애니메이션)
+---
