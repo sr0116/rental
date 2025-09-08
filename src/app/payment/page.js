@@ -25,10 +25,10 @@ export default function PaymentPage() {
         <h1 className="text-2xl font-bold mb-6 text-gray-800">구독 결제 테스트 플로우</h1>
 
         <div className="grid grid-cols-4 gap-4 mb-8">
-          <Order onResult={(data) => addLog("주문 생성", data)} />
+          {/*<Order onResult={(data) => addLog("주문 생성", data)} />*/}
           <PaymentFlow onResult={(title, data) => addLog(title, data)} />
-          <SubscribeCreate onResult={(data) => addLog("구독 생성", data)} />
-          <SubscribeStatus onResult={(data) => addLog("구독 상태 변경", data)} />
+          {/*<SubscribeCreate onResult={(data) => addLog("구독 생성", data)} />*/}
+          {/*<SubscribeStatus onResult={(data) => addLog("구독 상태 변경", data)} />*/}
         </div>
 
         <h2 className="text-xl font-semibold mb-4 text-gray-700">실행 로그</h2>

@@ -78,7 +78,7 @@ export default function PaymentPage() {
   };
 
   return (
-      <main className="p-6 space-y-4 bg-gray-100 min-h-screen">
+      <main className="p-6 space-y-4 text-white min-h-screen">
         <Script src="https://cdn.iamport.kr/v1/iamport.js" strategy="afterInteractive" />
         <h1 className="text-xl font-semibold">구독 결제 테스트 플로우</h1>
 
